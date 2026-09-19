@@ -55,27 +55,30 @@ private extension Comparable {
     func clamped(to range: ClosedRange<Self>) -> Self { min(max(self, range.lowerBound), range.upperBound) }
 }
 
-enum Level: Int, CaseIterable, Identifiable {
-    case colors = 1, memory, counting, attention, pattern, size, blue, order, animals, stars
+struct Level: Identifiable, Hashable {
+    let rawValue: Int
     var id: Int { rawValue }
+    static let allCases: [Level] = (1...100).map { Level(rawValue: $0) }
 
     var title: String {
-        switch self {
-        case .colors: return "Найди красные фрукты"
-        case .memory: return "Тренируем память"
-        case .counting: return "Посчитай яблоки"
-        case .attention: return "Найди лишнее"
-        case .pattern: return "Продолжи ряд"
-        case .size: return "Найди самый большой"
-        case .blue: return "Найди синие предметы"
-        case .order: return "Нажми по порядку"
-        case .animals: return "Найди животных"
-        case .stars: return "Собери звёздочки"
+        switch rawValue {
+        case 1: return "Найди красные фрукты"
+        case 2: return "Тренируем память"
+        case 3: return "Посчитай яблоки"
+        case 4: return "Найди лишнее"
+        case 5: return "Продолжи ряд"
+        case 6: return "Найди самый большой"
+        case 7: return "Найди синие предметы"
+        case 8: return "Нажми по порядку"
+        case 9: return "Найди животных"
+        case 10: return "Собери звёздочки"
+        default: return "Умное задание №\\(rawValue)"
         }
     }
 
     var icon: String {
-        ["🎨","🧠","🔢","👀","🧩","📏","🔵","🔢","🐾","⭐️"][rawValue - 1]
+        let icons = ["🎨","🧠","🔢","👀","🧩","📏","🔵","🔢","🐾","⭐️"]
+        return rawValue <= 10 ? icons[rawValue - 1] : ["🍎","🐻","🧩","🔢","🌈","⭐️","🚀","🎯"].randomElement()!
     }
 }
 
@@ -93,7 +96,7 @@ struct HomeView: View {
                     VStack(spacing: 14) {
                         Text("🐻").font(.system(size: 80))
                         Text("Мир Мишки").font(.system(size: 34, weight: .heavy, design: .rounded))
-                        Text("10 весёлых заданий + умный режим").font(.headline).foregroundStyle(.secondary)
+                        Text("100 уровней + умный режим ∞").font(.headline).foregroundStyle(.secondary)
                         HStack(spacing: 8) { Text("⭐️").font(.title2); Text("Всего баллов: \(totalScore)").font(.headline.bold()) }
                             .padding(.horizontal, 16).padding(.vertical, 9).background(.white.opacity(0.9)).clipShape(Capsule())
 
@@ -136,7 +139,7 @@ struct HomeView: View {
             .sheet(isPresented: $showSettings) { SettingsView() }
             .fullScreenCover(item: $selected) { level in
                 LevelView(level: level) {
-                    unlocked = max(unlocked, min(Level.allCases.count, level.rawValue + 1))
+                    unlocked = max(unlocked, min(100, level.rawValue + 1))
                     selected = nil
                 }
             }
@@ -183,6 +186,9 @@ struct LevelView: View {
     @State private var nextNumber = 1
     @State private var bearBounce = false
     @State private var showSparkles = false
+    @State private var generatedRound: SmartRound?
+    @State private var generatedSelected = Set<Int>()
+    @State private var generatedWrong = Set<Int>()
     @AppStorage("totalScore") private var totalScore = 0
 
     private let memoryTargets = ["🐶","🍎","🚗","🌈"]
@@ -208,32 +214,37 @@ struct LevelView: View {
     }
 
     private var prompt: String {
-        switch level {
-        case .colors: return "Найди все красные фрукты!"
-        case .memory: return "Запомни картинки и найди их среди других!"
-        case .counting: return "Сколько яблок?"
-        case .attention: return "Найди предмет, который отличается!"
-        case .pattern: return "Что должно быть дальше?"
-        case .size: return "Нажми на самый большой предмет!"
-        case .blue: return "Найди все синие предметы!"
-        case .order: return "Нажимай числа от 1 до 5"
-        case .animals: return "Найди всех животных!"
-        case .stars: return "Собери все звёздочки!"
+        if level.rawValue > 10 { return generatedRound?.title ?? "Готовим задание..." }
+        switch level.rawValue {
+        case 1: return "Найди все красные фрукты!"
+        case 2: return "Запомни картинки и найди их среди других!"
+        case 3: return "Сколько яблок?"
+        case 4: return "Найди предмет, который отличается!"
+        case 5: return "Что должно быть дальше?"
+        case 6: return "Нажми на самый большой предмет!"
+        case 7: return "Найди все синие предметы!"
+        case 8: return "Нажимай числа от 1 до 5"
+        case 9: return "Найди всех животных!"
+        default: return "Собери все звёздочки!"
         }
     }
 
     @ViewBuilder private var content: some View {
-        switch level {
-        case .colors: colorsLevel
-        case .memory: memoryLevel
-        case .counting: countingLevel
-        case .attention: oddLevel
-        case .pattern: patternLevel
-        case .size: sizeLevel
-        case .blue: blueLevel
-        case .order: orderLevel
-        case .animals: animalsLevel
-        case .stars: starsLevel
+        if level.rawValue > 10 {
+            generatedLevel
+        } else {
+            switch level.rawValue {
+            case 1: colorsLevel
+            case 2: memoryLevel
+            case 3: countingLevel
+            case 4: oddLevel
+            case 5: patternLevel
+            case 6: sizeLevel
+            case 7: blueLevel
+            case 8: orderLevel
+            case 9: animalsLevel
+            default: starsLevel
+            }
         }
     }
 
@@ -307,8 +318,16 @@ struct LevelView: View {
 
     private func numberButton(_ n: Int) -> some View {
         Button { GameSound.tap(); if n == 5 { addPoints(3); GameSound.correct(); finish() } else { GameSound.wrong() } } label: {
-            Text("\(n)").font(.system(size: 38, weight: .heavy, design: .rounded)).foregroundStyle(.black)
-                .frame(width: 88, height: 88).background(.white).clipShape(RoundedRectangle(cornerRadius: 20)).shadow(radius: 3)
+            Text("\(n)")
+                .font(.system(size: 38, weight: .heavy, design: .rounded))
+                .foregroundStyle(.black)
+                .frame(width: 88, height: 88)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(.white)
+                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(.black, lineWidth: 3))
+                )
+                .shadow(radius: 3)
         }.buttonStyle(.plain)
     }
 
@@ -379,9 +398,55 @@ struct LevelView: View {
         }.onChange(of: found) { v in if v.count == 4 { finish() } }
     }
 
+    private var generatedLevel: some View {
+        let r = generatedRound ?? SmartGenerator.make(difficulty: max(1, min(10, level.rawValue / 10 + 1)))
+        return VStack(spacing: 14) {
+            Text("Уровень \(level.rawValue) из 100")
+                .font(.headline)
+                .foregroundStyle(.secondary)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 10) {
+                ForEach(r.items.indices, id: \.self) { index in
+                    Button {
+                        guard !generatedSelected.contains(index) && !generatedWrong.contains(index) else { return }
+                        GameSound.tap()
+                        if r.answers.contains(index) {
+                            generatedSelected.insert(index)
+                            addPoints(r.points)
+                            GameSound.correct()
+                            if generatedSelected.isSuperset(of: r.answers) { finish() }
+                        } else {
+                            generatedWrong.insert(index)
+                            GameSound.wrong()
+                        }
+                    } label: {
+                        ZStack(alignment: .topTrailing) {
+                            RoundedRectangle(cornerRadius: 18)
+                                .fill(.white)
+                                .overlay(RoundedRectangle(cornerRadius: 18).stroke(.black.opacity(0.15), lineWidth: 2))
+                                .frame(height: 76)
+                            Text(r.items[index])
+                                .font(.system(size: r.items[index].count <= 2 ? 40 : 23, weight: .bold))
+                                .foregroundStyle(.black)
+                            if generatedSelected.contains(index) {
+                                Text("✓").font(.title.bold()).foregroundStyle(.green).padding(5)
+                            } else if generatedWrong.contains(index) {
+                                Text("✕").font(.title.bold()).foregroundStyle(.red).padding(5)
+                            }
+                        }
+                        .scaleEffect(generatedSelected.contains(index) ? 1.05 : generatedWrong.contains(index) ? 0.94 : 1)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
     private func prepare() {
-        if level == .memory && memoryOptions.isEmpty { memoryOptions = (memoryTargets + memoryDistractors).shuffled() }
-        if level == .order && orderItems.isEmpty { orderItems = Array(1...5).shuffled() }
+        if level.rawValue > 10 && generatedRound == nil {
+            generatedRound = SmartGenerator.make(difficulty: max(1, min(10, level.rawValue / 10 + 1)))
+        }
+        if level.rawValue == 2 && memoryOptions.isEmpty { memoryOptions = (memoryTargets + memoryDistractors).shuffled() }
+        if level.rawValue == 8 && orderItems.isEmpty { orderItems = Array(1...5).shuffled() }
         withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { bearBounce = true }
     }
 
