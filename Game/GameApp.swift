@@ -93,7 +93,7 @@ struct HomeView: View {
                     VStack(spacing: 14) {
                         Text("🐻").font(.system(size: 80))
                         Text("Мир Мишки").font(.system(size: 34, weight: .heavy, design: .rounded))
-                        Text("10 весёлых заданий").font(.headline).foregroundStyle(.secondary)
+                        Text("10 весёлых заданий + умный режим").font(.headline).foregroundStyle(.secondary)
                         HStack(spacing: 8) { Text("⭐️").font(.title2); Text("Всего баллов: \(totalScore)").font(.headline.bold()) }
                             .padding(.horizontal, 16).padding(.vertical, 9).background(.white.opacity(0.9)).clipShape(Capsule())
 
