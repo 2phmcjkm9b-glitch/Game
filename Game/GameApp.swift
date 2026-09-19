@@ -84,7 +84,7 @@ struct Level: Identifiable, Hashable {
 
 struct HomeView: View {
     @State private var selected: Level?
-    @AppStorage("unlockedLevel") private var unlocked = 1
+    @AppStorage("unlockedLevel") private var unlocked = 100
     @State private var showSettings = false
     @AppStorage("totalScore") private var totalScore = 0
 
@@ -113,7 +113,7 @@ struct HomeView: View {
 
                         ForEach(Level.allCases) { level in
                             Button {
-                                guard level.rawValue <= unlocked else { return }
+                                guard level.rawValue >= 1 && level.rawValue <= 100 else { return }
                                 GameSound.tap(); selected = level
                             } label: {
                                 HStack {
@@ -123,7 +123,7 @@ struct HomeView: View {
                                         Text(level.title).font(.headline)
                                     }
                                     Spacer()
-                                    Text(level.rawValue <= unlocked ? "▶️" : "🔒")
+                                    Text("▶️")
                                 }
                                 .padding(16).frame(maxWidth: .infinity)
                                 .background(.white.opacity(0.92))
@@ -131,7 +131,7 @@ struct HomeView: View {
                                 .shadow(radius: 3)
                             }
                             .buttonStyle(.plain)
-                            .opacity(level.rawValue <= unlocked ? 1 : 0.5)
+                            .opacity(1)
                         }
                     }.padding()
                 }
@@ -320,12 +320,13 @@ struct LevelView: View {
         Button { GameSound.tap(); if n == 5 { addPoints(3); GameSound.correct(); finish() } else { GameSound.wrong() } } label: {
             Text("\(n)")
                 .font(.system(size: 38, weight: .heavy, design: .rounded))
-                .foregroundStyle(.black)
+                .foregroundStyle(Color(red: 0.03, green: 0.03, blue: 0.03))
+                .shadow(color: .white, radius: 1)
                 .frame(width: 88, height: 88)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(.white)
-                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(.black, lineWidth: 3))
+                        .fill(Color(white: 0.94))
+                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(white: 0.15), lineWidth: 3))
                 )
                 .shadow(radius: 3)
         }.buttonStyle(.plain)
