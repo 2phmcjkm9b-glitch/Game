@@ -447,14 +447,14 @@ enum SmartGenerator {
             let others = ["🔴", "🔵", "🟢", "🟡", "🟣", "🟠"].filter { $0 != target }
             items += Array(others.shuffled().prefix(5 + d / 3))
             items.shuffle()
-            return SmartRound(title: "Найди все (target) предметы", items: items,
+            return SmartRound(title: "Найди все \(target) предметы", items: items,
                               answers: Set(items.indices.filter { items[$0] == target }), points: 1)
         case .fruit:
             let target = ["🍎", "🍓", "🍒", "🍌", "🍊", "🍋", "🥝", "🍇"].randomElement()!
             var items = [target, target]
             items += Array(["🍎", "🍓", "🍒", "🍌", "🍊", "🍋", "🥝", "🍇"].shuffled().prefix(6 + d / 2))
             items.shuffle()
-            return SmartRound(title: "Найди все (target)", items: items,
+            return SmartRound(title: "Найди все \(target)", items: items,
                               answers: Set(items.indices.filter { items[$0] == target }), points: 2)
         case .animal:
             let animals = ["🐶", "🐱", "🐰", "🐼", "🦊", "🐸", "🐯"]
@@ -469,12 +469,12 @@ enum SmartGenerator {
             let correct = String(n)
             var answers = [correct, String(max(1, n - 1)), String(n + 1), String(n + 2)]
             answers.shuffle()
-            return SmartRound(title: "Сколько яблок? (String(repeating: "🍎", count: n))",
+            return SmartRound(title: "Сколько яблок? \(String(repeating: "🍎", count: n))",
                               items: answers, answers: Set(answers.indices.filter { answers[$0] == correct }), points: 3)
         case .pattern:
             let pair = [["🔴", "🔵"], ["⭐️", "🌙"], ["🍎", "🍌"], ["🟢", "🟡"]].randomElement()!
             let expected = pair[0]
-            return SmartRound(title: "Продолжи ряд: (pair[0]) (pair[1]) (pair[0]) (pair[1]) (pair[0]) ❓",
+            return SmartRound(title: "Продолжи ряд: \(pair[0]) \(pair[1]) \(pair[0]) \(pair[1]) \(pair[0]) ❓",
                               items: [expected, pair[1], "🟣"],
                               answers: Set([0]), points: 4)
         case .odd:
@@ -511,16 +511,16 @@ struct SmartLevelsView: View {
                     Spacer()
                     Text("🧠 Умные уровни").bold()
                     Spacer()
-                    Text("⭐️ (smartScore)").bold()
+                    Text("⭐️ \(smartScore)").bold()
                 }
                 HStack {
                     Text("🐻").font(.system(size: 64))
                         .offset(y: bearJump ? -7 : 3)
                         .rotationEffect(.degrees(bearJump ? 5 : -5))
                     VStack(alignment: .leading) {
-                        Text("Раунд (roundNumber)").font(.headline)
-                        Text("Сложность (difficulty)/10").font(.subheadline)
-                        if streak > 0 { Text("Серия: (streak) 🔥").font(.subheadline.bold()) }
+                        Text("Раунд \(roundNumber)").font(.headline)
+                        Text("Сложность \(difficulty)/10").font(.subheadline)
+                        if streak > 0 { Text("Серия: \(streak) 🔥").font(.subheadline.bold()) }
                     }
                     Spacer()
                 }
@@ -567,7 +567,7 @@ struct SmartLevelsView: View {
             VStack(spacing: 12) {
                 Text("🎉").font(.system(size: 70))
                 Text("Отлично!").font(.largeTitle.bold())
-                Text("+(round.points) ⭐️").font(.title2.bold())
+                Text("+\(round.points) ⭐️").font(.title2.bold())
                 Button("Следующее задание") { nextRound() }
                     .font(.headline).foregroundStyle(.white)
                     .padding().frame(maxWidth: 280)
