@@ -475,7 +475,7 @@ enum SmartGenerator {
             let pair = [["🔴", "🔵"], ["⭐️", "🌙"], ["🍎", "🍌"], ["🟢", "🟡"]].randomElement()!
             let expected = pair[0]
             return SmartRound(title: "Продолжи ряд: (pair[0]) (pair[1]) (pair[0]) (pair[1]) (pair[0]) ❓",
-                              items: [expected, pair[1], "🟣"].shuffled(),
+                              items: [expected, pair[1], "🟣"],
                               answers: Set([0]), points: 4)
         case .odd:
             let common = ["🍎", "🍎", "🍎", "🍎", "🍎", "🍎", "🍎"]
