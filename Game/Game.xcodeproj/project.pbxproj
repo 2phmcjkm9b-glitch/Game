@@ -1,4 +1,4 @@
-// !$*UTF8*$!
+// !$*UTF8*$
 {
  archiveVersion = 1;
  classes = {};
@@ -9,7 +9,7 @@
 /* End PBXBuildFile section */
 /* Begin PBXFileReference section */
   AAAAF000 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Game.app; sourceTree = BUILT_PRODUCTS_DIR; };
-  AAAAF001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameApp.swift; sourceTree = "<group>"; };
+  AAAAF001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameApp.swift; sourceTree = SOURCE_ROOT; };
   AAAAF002 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 /* Begin PBXFrameworksBuildPhase section */
