@@ -234,7 +234,7 @@ struct LevelView: View {
                 withAnimation(.spring(response: 0.25, dampingFraction: 0.65)) { found.insert(index); score += 1 }
                 GameSound.correct()
             } else {
-                withAnimation(.easeInOut(duration: 0.12)) { wrong.insert(index) }
+                _ = withAnimation(.easeInOut(duration: 0.12)) { wrong.insert(index) }
                 GameSound.wrong()
             }
         } label: {
@@ -255,7 +255,7 @@ struct LevelView: View {
         return LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
             ForEach(fruits.indices, id: \.self) { i in tile(fruits[i], index: i, correct: i < 3, size: 54) }
         }
-        .onChange(of: found) { _, v in if v.count == 3 { finish() } }
+        .onChange(of: found) { v in if v.count == 3 { finish() } }
     }
 
     private var memoryLevel: some View {
@@ -304,7 +304,7 @@ struct LevelView: View {
             let items = ["⭐️","⭐️","⭐️","🌙","⭐️","⭐️","⭐️","⭐️"]
             ForEach(items.indices, id: \.self) { i in tile(items[i], index: i, correct: i == 3, size: 40) }
         }
-        .onChange(of: found) { _, v in if v.contains(3) { finish() } }
+        .onChange(of: found) { v in if v.contains(3) { finish() } }
     }
 
     private var patternLevel: some View {
@@ -324,14 +324,14 @@ struct LevelView: View {
         HStack(alignment: .center, spacing: 8) {
             let sizes: [CGFloat] = [42, 58, 76, 50, 64, 46]
             ForEach(sizes.indices, id: \.self) { i in tile(["🍎","🍊","🍋","🍓","🍐","🍒"][i], index: i, correct: i == 2, size: sizes[i] * 0.72) }
-        }.onChange(of: found) { _, v in if v.contains(2) { finish() } }
+        }.onChange(of: found) { v in if v.contains(2) { finish() } }
     }
 
     private var blueLevel: some View {
         let items = ["🔵","🟢","🔴","🔵","🟡","🟣","🔵","🟠","🔵","🟢"]
         return LazyVGrid(columns: [GridItem(.flexible()),GridItem(.flexible()),GridItem(.flexible()),GridItem(.flexible())], spacing: 10) {
             ForEach(items.indices, id: \.self) { i in tile(items[i], index: i, correct: items[i] == "🔵", size: 40) }
-        }.onChange(of: found) { _, v in if v.count == 4 { finish() } }
+        }.onChange(of: found) { v in if v.count == 4 { finish() } }
     }
 
     private var orderLevel: some View {
@@ -355,14 +355,14 @@ struct LevelView: View {
         let items = ["🐶","🍎","🐱","🍌","🐰","🚗","🐼","🍓","🦊","⭐️"]
         return LazyVGrid(columns: [GridItem(.flexible()),GridItem(.flexible()),GridItem(.flexible()),GridItem(.flexible())], spacing: 10) {
             ForEach(items.indices, id: \.self) { i in tile(items[i], index: i, correct: ["🐶","🐱","🐰","🐼","🦊"].contains(items[i]), size: 40) }
-        }.onChange(of: found) { _, v in if v.count == 5 { finish() } }
+        }.onChange(of: found) { v in if v.count == 5 { finish() } }
     }
 
     private var starsLevel: some View {
         let items = ["⭐️","🍎","🌈","⭐️","🐶","🚗","⭐️","🍓","🌙","⭐️","🎈","🍋"]
         return LazyVGrid(columns: [GridItem(.flexible()),GridItem(.flexible()),GridItem(.flexible()),GridItem(.flexible())], spacing: 10) {
             ForEach(items.indices, id: \.self) { i in tile(items[i], index: i, correct: items[i] == "⭐️", size: 40) }
-        }.onChange(of: found) { _, v in if v.count == 4 { finish() } }
+        }.onChange(of: found) { v in if v.count == 4 { finish() } }
     }
 
     private func prepare() {
