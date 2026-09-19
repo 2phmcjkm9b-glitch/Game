@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import Foundation
 
 @main
 struct GameApp: App {
@@ -8,8 +9,8 @@ struct GameApp: App {
 
 enum GameSound {
     static var volume: Float {
-        get { UserDefaults.standard.object(forKey: "soundVolume") as? Float ?? 0.55 }
-        set { UserDefaults.standard.set(newValue, forKey: "soundVolume") }
+        get { Float(UserDefaults.standard.object(forKey: "soundVolume") as? Double ?? 0.55) }
+        set { UserDefaults.standard.set(Double(newValue), forKey: "soundVolume") }
     }
 
     private static var players: [AVAudioPlayer] = []
@@ -38,7 +39,9 @@ enum GameSound {
             p.volume = volume
             p.play()
             players.append(p)
-            players = players.filter { $0.isPlaying }
+            DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.25) {
+                players.removeAll { !$0.isPlaying }
+            }
         } catch {}
     }
 
@@ -135,7 +138,7 @@ struct HomeView: View {
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("soundVolume") private var volume = 0.55
+    @AppStorage("soundVolume") private var volume: Double = 0.55
 
     var body: some View {
         NavigationStack {
