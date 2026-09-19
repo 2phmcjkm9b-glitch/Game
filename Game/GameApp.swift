@@ -418,4 +418,187 @@ struct SuccessView: View {
     }
 }
 
-// SMART_MODE_PLACEHOLDER
+    
+// MARK: Smart endless mode
+
+enum SmartKind: CaseIterable {
+    case color, fruit, animal, count, pattern, odd
+}
+
+struct SmartRound {
+    let title: String
+    let items: [String]
+    let answers: Set<Int>
+    let points: Int
+}
+
+enum SmartGenerator {
+    static func make(difficulty: Int) -> SmartRound {
+        let d = max(1, min(10, difficulty))
+        switch SmartKind.allCases.randomElement()! {
+        case .color:
+            let target = ["🔴", "🔵", "🟢", "🟡"].randomElement()!
+            var items = [target, target, target]
+            let others = ["🔴", "🔵", "🟢", "🟡", "🟣", "🟠"].filter { $0 != target }
+            items += Array(others.shuffled().prefix(5 + d / 3))
+            items.shuffle()
+            return SmartRound(title: "Найди все (target) предметы", items: items,
+                              answers: Set(items.indices.filter { items[$0] == target }), points: 1)
+        case .fruit:
+            let target = ["🍎", "🍓", "🍒", "🍌", "🍊", "🍋", "🥝", "🍇"].randomElement()!
+            var items = [target, target]
+            items += Array(["🍎", "🍓", "🍒", "🍌", "🍊", "🍋", "🥝", "🍇"].shuffled().prefix(6 + d / 2))
+            items.shuffle()
+            return SmartRound(title: "Найди все (target)", items: items,
+                              answers: Set(items.indices.filter { items[$0] == target }), points: 2)
+        case .animal:
+            let animals = ["🐶", "🐱", "🐰", "🐼", "🦊", "🐸", "🐯"]
+            let other = ["🍎", "🚗", "⭐️", "🎈", "🌈", "⚽️"]
+            var items = Array(animals.shuffled().prefix(min(3 + d / 2, 6)))
+            items += Array(other.shuffled().prefix(5))
+            items.shuffle()
+            return SmartRound(title: "Найди всех животных", items: items,
+                              answers: Set(items.indices.filter { animals.contains(items[$0]) }), points: 2)
+        case .count:
+            let n = 3 + Int.random(in: 0...min(7, d))
+            let correct = String(n)
+            var answers = [correct, String(max(1, n - 1)), String(n + 1), String(n + 2)]
+            answers.shuffle()
+            return SmartRound(title: "Сколько яблок? (String(repeating: "🍎", count: n))",
+                              items: answers, answers: Set(answers.indices.filter { answers[$0] == correct }), points: 3)
+        case .pattern:
+            let pair = [["🔴", "🔵"], ["⭐️", "🌙"], ["🍎", "🍌"], ["🟢", "🟡"]].randomElement()!
+            let expected = pair[0]
+            return SmartRound(title: "Продолжи ряд: (pair[0]) (pair[1]) (pair[0]) (pair[1]) (pair[0]) ❓",
+                              items: [expected, pair[1], "🟣"].shuffled(),
+                              answers: Set([0]), points: 4)
+        case .odd:
+            let common = ["🍎", "🍎", "🍎", "🍎", "🍎", "🍎", "🍎"]
+            let odd = ["🍐", "🍌", "🍊", "🍓"].randomElement()!
+            var items = common + [odd]
+            items.shuffle()
+            return SmartRound(title: "Найди лишний фрукт", items: items,
+                              answers: Set(items.indices.filter { items[$0] == odd }), points: 3)
+        }
+    }
+}
+
+struct SmartLevelsView: View {
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage("smartDifficulty") private var difficulty = 1
+    @AppStorage("smartScore") private var smartScore = 0
+    @AppStorage("totalScore") private var totalScore = 0
+    @State private var roundNumber = 1
+    @State private var streak = 0
+    @State private var selected = Set<Int>()
+    @State private var wrong = Set<Int>()
+    @State private var finished = false
+    @State private var bearJump = false
+    @State private var round = SmartGenerator.make(difficulty: 1)
+
+    var body: some View {
+        ZStack {
+            LinearGradient(colors: [.purple.opacity(0.15), .cyan.opacity(0.12)],
+                           startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+            VStack(spacing: 14) {
+                HStack {
+                    Button("Закрыть") { dismiss() }
+                    Spacer()
+                    Text("🧠 Умные уровни").bold()
+                    Spacer()
+                    Text("⭐️ (smartScore)").bold()
+                }
+                HStack {
+                    Text("🐻").font(.system(size: 64))
+                        .offset(y: bearJump ? -7 : 3)
+                        .rotationEffect(.degrees(bearJump ? 5 : -5))
+                    VStack(alignment: .leading) {
+                        Text("Раунд (roundNumber)").font(.headline)
+                        Text("Сложность (difficulty)/10").font(.subheadline)
+                        if streak > 0 { Text("Серия: (streak) 🔥").font(.subheadline.bold()) }
+                    }
+                    Spacer()
+                }
+                Text(round.title).font(.title2.bold()).multilineTextAlignment(.center)
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 10) {
+                    ForEach(round.items.indices, id: \.self) { index in
+                        Button { choose(index) } label: {
+                            ZStack(alignment: .topTrailing) {
+                                Text(round.items[index])
+                                    .font(.system(size: round.items[index].count <= 2 ? 42 : 24, weight: .bold))
+                                    .frame(maxWidth: .infinity, minHeight: 72)
+                                    .background(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                                    .overlay(RoundedRectangle(cornerRadius: 18)
+                                        .stroke(selected.contains(index) ? .green : wrong.contains(index) ? .red : .clear, lineWidth: 5))
+                                    .scaleEffect(selected.contains(index) ? 1.05 : wrong.contains(index) ? 0.94 : 1)
+                                if selected.contains(index) {
+                                    Text("✓").font(.title.bold()).foregroundStyle(.green).padding(5)
+                                } else if wrong.contains(index) {
+                                    Text("✕").font(.title.bold()).foregroundStyle(.red).padding(5)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(selected.contains(index) || wrong.contains(index))
+                    }
+                }
+                Text("ИИ подбирает следующее задание по твоим результатам.")
+                    .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                Spacer()
+            }
+            .padding()
+            if finished { smartFinish }
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
+                bearJump = true
+            }
+        }
+    }
+
+    private var smartFinish: some View {
+        Color.black.opacity(0.25).ignoresSafeArea().overlay {
+            VStack(spacing: 12) {
+                Text("🎉").font(.system(size: 70))
+                Text("Отлично!").font(.largeTitle.bold())
+                Text("+(round.points) ⭐️").font(.title2.bold())
+                Button("Следующее задание") { nextRound() }
+                    .font(.headline).foregroundStyle(.white)
+                    .padding().frame(maxWidth: 280)
+                    .background(.orange).clipShape(RoundedRectangle(cornerRadius: 18))
+            }
+            .padding(28).frame(maxWidth: 350)
+            .background(.white).clipShape(RoundedRectangle(cornerRadius: 30))
+            .shadow(radius: 20)
+        }
+    }
+
+    private func choose(_ index: Int) {
+        GameSound.tap()
+        if round.answers.contains(index) {
+            selected.insert(index)
+            smartScore += round.points
+            totalScore += round.points
+            GameSound.correct()
+            if selected.isSuperset(of: round.answers) {
+                streak += 1
+                if streak >= 2 { difficulty = min(10, difficulty + 1) }
+                finished = true
+            }
+        } else {
+            wrong.insert(index)
+            streak = 0
+            difficulty = max(1, difficulty - 1)
+            GameSound.wrong()
+        }
+    }
+
+    private func nextRound() {
+        selected.removeAll()
+        wrong.removeAll()
+        finished = false
+        roundNumber += 1
+        round = SmartGenerator.make(difficulty: difficulty)
+    }
+}
