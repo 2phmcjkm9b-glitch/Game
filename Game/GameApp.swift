@@ -83,6 +83,7 @@ struct HomeView: View {
     @State private var selected: Level?
     @AppStorage("unlockedLevel") private var unlocked = 1
     @State private var showSettings = false
+    @AppStorage("totalScore") private var totalScore = 0
 
     var body: some View {
         NavigationStack {
@@ -93,6 +94,8 @@ struct HomeView: View {
                         Text("🐻").font(.system(size: 80))
                         Text("Мир Мишки").font(.system(size: 34, weight: .heavy, design: .rounded))
                         Text("10 весёлых заданий").font(.headline).foregroundStyle(.secondary)
+                        HStack(spacing: 8) { Text("⭐️").font(.title2); Text("Всего баллов: \(totalScore)").font(.headline.bold()) }
+                            .padding(.horizontal, 16).padding(.vertical, 9).background(.white.opacity(0.9)).clipShape(Capsule())
 
                         Button { GameSound.tap(); showSettings = true } label: {
                             Label("Настройки звука", systemImage: "speaker.wave.2.fill")
@@ -173,6 +176,9 @@ struct LevelView: View {
     @State private var memoryFound = Set<String>()
     @State private var orderItems: [Int] = []
     @State private var nextNumber = 1
+    @State private var bearBounce = false
+    @State private var showSparkles = false
+    @AppStorage("totalScore") private var totalScore = 0
 
     private let memoryTargets = ["🐶","🍎","🚗","🌈"]
     private let memoryDistractors = ["🐱","⭐️","🍋","🚲","🦋","🍉","🎈","🐰"]
@@ -186,7 +192,7 @@ struct LevelView: View {
                     Spacer()
                     Text("⭐️ \(score)").bold()
                 }
-                Text("🐻").font(.system(size: 58))
+                BearView()
                 Text(prompt).font(.title2.bold()).multilineTextAlignment(.center)
                 content
                 Spacer()
@@ -226,12 +232,14 @@ struct LevelView: View {
         }
     }
 
+    private func addPoints(_ points: Int) { score += points; totalScore += points }
+
     private func tile(_ text: String, index: Int, correct: Bool, size: CGFloat = 76) -> some View {
         Button {
             guard !found.contains(index) && !wrong.contains(index) else { return }
             GameSound.tap()
             if correct {
-                withAnimation(.spring(response: 0.25, dampingFraction: 0.65)) { found.insert(index); score += 1 }
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.65)) { found.insert(index); addPoints(1) }
                 GameSound.correct()
             } else {
                 _ = withAnimation(.easeInOut(duration: 0.12)) { wrong.insert(index) }
@@ -279,7 +287,7 @@ struct LevelView: View {
     private func answerMemory(_ item: String) {
         GameSound.tap()
         if memoryTargets.contains(item) {
-            memoryFound.insert(item); score += 1; GameSound.correct()
+            memoryFound.insert(item); addPoints(1); GameSound.correct()
             if memoryFound.count == memoryTargets.count { finish() }
         } else { GameSound.wrong() }
     }
@@ -293,7 +301,7 @@ struct LevelView: View {
     }
 
     private func numberButton(_ n: Int) -> some View {
-        Button { GameSound.tap(); if n == 5 { score = 3; GameSound.correct(); finish() } else { GameSound.wrong() } } label: {
+        Button { GameSound.tap(); if n == 5 { addPoints(3); GameSound.correct(); finish() } else { GameSound.wrong() } } label: {
             Text("\(n)").font(.system(size: 38, weight: .heavy, design: .rounded)).foregroundStyle(.black)
                 .frame(width: 88, height: 88).background(.white).clipShape(RoundedRectangle(cornerRadius: 20)).shadow(radius: 3)
         }.buttonStyle(.plain)
@@ -309,13 +317,14 @@ struct LevelView: View {
 
     private var patternLevel: some View {
         VStack(spacing: 20) {
-            Text("🔴 🔵 🔴 🔵 ❓").font(.system(size: 34))
-            HStack { answerPattern("🔴", correct: false); answerPattern("🔵", correct: true); answerPattern("🟢", correct: false) }
+            HStack(spacing: 12) { Text("🔴").font(.system(size: 42)); Text("🔵").font(.system(size: 42)); Text("🔴").font(.system(size: 42)); Text("🔵").font(.system(size: 42)); Text("🔴").font(.system(size: 42)); Text("❓").font(.system(size: 42)).scaleEffect(1.08) }
+            Text("Красный круг — следующий!").font(.headline).foregroundStyle(.red)
+            HStack { answerPattern("🔴", correct: true); answerPattern("🔵", correct: false); answerPattern("🟢", correct: false) }
         }
     }
 
     private func answerPattern(_ text: String, correct: Bool) -> some View {
-        Button { GameSound.tap(); if correct { score = 5; GameSound.correct(); finish() } else { GameSound.wrong() } } label: {
+        Button { GameSound.tap(); if correct { addPoints(5); GameSound.correct(); finish() } else { GameSound.wrong() } } label: {
             Text(text).font(.system(size: 40)).frame(width: 80, height: 80).background(.white).clipShape(Circle())
         }.buttonStyle(.plain)
     }
@@ -340,8 +349,8 @@ struct LevelView: View {
                 Button {
                     GameSound.tap()
                     if n == nextNumber {
-                        score += 1; GameSound.correct()
-                        withAnimation { orderItems.removeAll { $0 == n }; nextNumber += 1 }
+                        addPoints(1); GameSound.correct()
+                        withAnimation(.spring(response: 0.28, dampingFraction: 0.7)) { orderItems.removeAll { $0 == n }; nextNumber += 1 }
                         if nextNumber == 6 { finish() }
                     } else { GameSound.wrong() }
                 } label: {
@@ -368,12 +377,25 @@ struct LevelView: View {
     private func prepare() {
         if level == .memory && memoryOptions.isEmpty { memoryOptions = (memoryTargets + memoryDistractors).shuffled() }
         if level == .order && orderItems.isEmpty { orderItems = Array(1...5).shuffled() }
+        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { bearBounce = true }
     }
 
     private func finish() {
         guard !done else { return }
         GameSound.success()
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) { done = true }
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) { done = true; showSparkles = true }
+    }
+}
+
+struct BearView: View {
+    @State private var jump = false
+    @State private var sway = false
+    var body: some View {
+        Text("🐻").font(.system(size: 58)).offset(y: jump ? -8 : 0).rotationEffect(.degrees(sway ? 4 : -4))
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) { jump = true }
+                withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) { sway = true }
+            }
     }
 }
 
@@ -382,7 +404,10 @@ struct SuccessView: View {
     var body: some View {
         Color.black.opacity(0.25).ignoresSafeArea().overlay {
             VStack(spacing: 14) {
-                Text("🎉").font(.system(size: 70))
+                ZStack {
+                    Text("🎉").font(.system(size: 70)).scaleEffect(1.0)
+                    Text("✨ ⭐️ ✨ ⭐️ ✨").font(.system(size: 26)).offset(y: -58).transition(.scale)
+                }
                 Text("Молодец!").font(.largeTitle.bold())
                 Text("Уровень пройден").font(.title3)
                 Text("⭐️ ⭐️ ⭐️").font(.system(size: 30))
