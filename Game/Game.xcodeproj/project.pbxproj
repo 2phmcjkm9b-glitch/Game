@@ -1,0 +1,45 @@
+// !$*UTF8*$!
+{
+ archiveVersion = 1;
+ classes = {};
+ objectVersion = 56;
+ objects = {
+/* Begin PBXBuildFile section */
+  AAAAA001 = {isa = PBXBuildFile; fileRef = AAAAF001; };
+/* End PBXBuildFile section */
+/* Begin PBXFileReference section */
+  AAAAF000 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Game.app; sourceTree = BUILT_PRODUCTS_DIR; };
+  AAAAF001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameApp.swift; sourceTree = "<group>"; };
+  AAAAF002 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+/* Begin PBXFrameworksBuildPhase section */
+  AAAAB001 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+/* Begin PBXGroup section */
+  AAAAG000 = {isa = PBXGroup; children = (AAAAG001, AAAAG002); sourceTree = "<group>"; };
+  AAAAG001 = {isa = PBXGroup; children = (AAAAF001, AAAAF002); path = Game; sourceTree = "<group>"; };
+  AAAAG002 = {isa = PBXGroup; children = (AAAAF000); name = Products; sourceTree = "<group>"; };
+/* End PBXGroup section */
+/* Begin PBXNativeTarget section */
+  AAAAT001 = {isa = PBXNativeTarget; buildConfigurationList = AAAAC002; buildPhases = (AAAAB001, AAAAS001, AAAAR001); buildRules = (); dependencies = (); name = Game; productName = Game; productReference = AAAAF000; productType = "com.apple.product-type.application"; };
+/* End PBXNativeTarget section */
+/* Begin PBXProject section */
+  AAAAP001 = {isa = PBXProject; attributes = { LastUpgradeCheck = 1600; TargetAttributes = { AAAAT001 = { CreatedOnToolsVersion = 16.0; }; }; }; buildConfigurationList = AAAAC001; compatibilityVersion = "Xcode 15.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = AAAAG000; productRefGroup = AAAAG002; projectDirPath = ""; projectRoot = ""; targets = (AAAAT001); };
+/* End PBXProject section */
+/* Begin PBXResourcesBuildPhase section */
+  AAAAR001 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+/* Begin PBXSourcesBuildPhase section */
+  AAAAS001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (AAAAA001); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+/* Begin XCBuildConfiguration section */
+  AAAAC010 = {isa = XCBuildConfiguration; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; INFOPLIST_FILE = Game/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.mishkaworld.game; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+  AAAAC011 = {isa = XCBuildConfiguration; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; INFOPLIST_FILE = Game/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.mishkaworld.game; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
+/* End XCBuildConfiguration section */
+/* Begin XCConfigurationList section */
+  AAAAC001 = {isa = XCConfigurationList; buildConfigurations = (AAAAC010, AAAAC011); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+  AAAAC002 = {isa = XCConfigurationList; buildConfigurations = (AAAAC010, AAAAC011); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+ };
+ rootObject = AAAAP001;
+}
