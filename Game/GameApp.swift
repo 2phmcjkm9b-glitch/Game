@@ -97,11 +97,16 @@ struct HomeView: View {
                         HStack(spacing: 8) { Text("⭐️").font(.title2); Text("Всего баллов: \(totalScore)").font(.headline.bold()) }
                             .padding(.horizontal, 16).padding(.vertical, 9).background(.white.opacity(0.9)).clipShape(Capsule())
 
-                        Button { GameSound.tap(); showSettings = true } label: {
-                            Label("Настройки звука", systemImage: "speaker.wave.2.fill")
-                                .font(.headline).padding(.vertical, 10).frame(maxWidth: .infinity)
+                        VStack(spacing: 10) {
+                            NavigationLink { SmartLevelsView() } label: {
+                                Label("Умные уровни ∞", systemImage: "brain.head.profile")
+                                    .font(.headline).padding(.vertical, 10).frame(maxWidth: .infinity)
+                            }.buttonStyle(.borderedProminent)
+                            Button { GameSound.tap(); showSettings = true } label: {
+                                Label("Настройки звука", systemImage: "speaker.wave.2.fill")
+                                    .font(.headline).padding(.vertical, 10).frame(maxWidth: .infinity)
+                            }.buttonStyle(.borderedProminent)
                         }
-                        .buttonStyle(.borderedProminent)
 
                         ForEach(Level.allCases) { level in
                             Button {
