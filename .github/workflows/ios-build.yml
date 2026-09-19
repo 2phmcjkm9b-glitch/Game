@@ -1,0 +1,31 @@
+name: Build iOS Game
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Build unsigned app
+        run: |
+          set -e
+          xcodebuild -project Game/Game.xcodeproj -scheme Game -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build CONFIGURATION_BUILD_DIR="$PWD/build"
+      - name: Package
+        run: |
+          set -e
+          mkdir -p artifact
+          test -d build/Game.app
+          cp -R build/Game.app artifact/Game.app
+          cd artifact
+          zip -r ../Game-unsigned-app.zip Game.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Game-unsigned-app
+          path: Game-unsigned-app.zip
+          if-no-files-found: error
